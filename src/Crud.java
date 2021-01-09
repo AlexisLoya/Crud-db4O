@@ -5,7 +5,9 @@ import com.db4o.query.Predicate;
 import com.db4o.query.Query;
 
 import java.sql.Date;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Crud {
 
@@ -14,7 +16,7 @@ public class Crud {
             "escuela_alexis.db4o"
     );
 
-    private boolean addData(Object data) {
+    protected boolean addData(Object data) {
         try {
             db.store(data);
             db.commit();
@@ -29,7 +31,7 @@ public class Crud {
     }
 
 
-    private String checkMatricula(String msj) {
+    protected String checkMatricula(String msj) {
         try {
             String user_answer = getString("matricula:");
             ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
@@ -49,6 +51,25 @@ public class Crud {
         }
     }
 
+    protected String checkCode(String msj) {
+        try {
+            String user_answer = getString("clave:");
+            ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+                @Override
+                public boolean match(Materia materia) {
+                    return materia.getClave().equalsIgnoreCase(user_answer);
+                }
+            });
+            if (!result.isEmpty()) {
+                System.out.println("ese clave ya se encuentra en uso\nIntenta con otro");
+                return checkCode(msj);
+            } else {
+                return user_answer;
+            }
+        } catch (Exception e) {
+            return checkCode(msj);
+        }
+    }
 
     public void addStudent() {
         System.out.println("--Añadir un Alumno--");
@@ -178,6 +199,138 @@ public class Crud {
         }
     }
 
+    public void addSSubject() {
+        System.out.println("--Añadir una Materia--");
+        Set<Alumno> alumnos = new HashSet<>();
+        Materia new_subject = new Materia(
+                checkCode("Matricula:"),
+                getString("Nombre:"),
+                alumnos
+        );
+        if (addData(new_subject)) {
+            System.out.println("materia registrada correctamente");
+        } else {
+            System.out.println("Ocurrió un error al intentar registrarla");
+        }
+    }
+
+    public void findSubjectForAny() {
+        try {
+            String user_answer = getString("nombre:");
+            ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+                @Override
+                public boolean match(Materia materia) {
+                    return materia.getNombre().equalsIgnoreCase(user_answer);
+                }
+            });
+            for (Materia a : result) {
+                System.out.println(a);
+            }
+        } catch (Exception e) {
+            System.out.println("No se encontró ningúna coincidencia");
+        }
+    }
+
+    public Materia findSubjectForCode() {
+        Materia materia = null;
+        try {
+            String user_answer = getString("clave:");
+            ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+                @Override
+                public boolean match(Materia materia) {
+                    return materia.getClave().equalsIgnoreCase(user_answer);
+                }
+            });
+            materia = result.next();
+        } catch (Exception e) {
+            System.out.println("Esa materia no esta registrada");
+        }
+        return materia;
+    }
+
+
+    public void deleteSubject() {
+        try {
+            Materia deleted_subject = findSubjectForCode();
+            if (deleted_subject == null) {
+                return;
+            } else {
+                System.out.println("¿Estás segúro de eliminar la materia?\n1. si\n2. cancelar");
+                int user_answer = getInt("opción:");
+                switch (user_answer) {
+                    case 1:
+                        Query query = db.query();
+                        query.constrain(Materia.class);
+                        query.descend("clave").constrain(deleted_subject.getClave());
+                        ObjectSet<Materia> result = query.execute();
+                        Materia materia = result.next();
+                        db.delete(materia);
+                        db.commit();
+                        System.out.println("Materia Eliminada correctamente");
+                        break;
+                    case 2:
+                        System.out.println("cancelando eliminación...");
+                        break;
+                    default:
+                        System.out.println("Escoge una opción disponible");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    public void subjetsMenu() {
+        while (true) {
+            System.out.println("--menú de materias--" +
+                    "\n1. Añadir" +
+                    "\n2. Actualizar" +
+                    "\n3. Añadir alumno a una materia" +
+                    "\n4. Eliminar alumno de una materia" +
+                    "\n5. Buscar por clave" +
+                    "\n6. Buscar por coincidencia" +
+                    "\n7. Listar todas" +
+                    "\n8. Eliminar" +
+                    "\n9. Regresar al menú principal");
+            int user_answer = getInt("opción:");
+            switch (user_answer) {
+                case 1:
+                    addSSubject();
+                    break;
+                case 2:
+                    updateStudent();
+                    break;
+                case 3:
+                    updateStudent();
+                    break;
+                case 4:
+                    updateStudent();
+                    break;
+                case 5:
+                    Materia materia = findSubjectForCode();
+                    if (materia != null) System.out.println(materia);
+                    break;
+                case 6:
+                    findSubjectForAny();
+                    break;
+                case 7:
+                    findAllSubjects();
+                    break;
+                case 8:
+                    deleteSubject();
+                    break;
+                case 9:
+                    System.out.println("volviendo...");
+                    break;
+                default:
+                    System.out.println("ingresa una respuesta valida");
+            }
+            if (user_answer == 7) break;
+        }
+    }
+
+
+
+
     public void findAllSubjects() {
         try {
             Query query = db.query();
@@ -195,7 +348,7 @@ public class Crud {
     }
 
 
-    private String getString(String msj) {
+    protected String getString(String msj) {
         Scanner sc = new Scanner(System.in);
         try {
             System.out.print(msj);
@@ -208,7 +361,7 @@ public class Crud {
         return getString(msj);
     }
 
-    private int getInt(String msj) {
+    protected int getInt(String msj) {
         Scanner sc = new Scanner(System.in);
         try {
             System.out.print(msj);
@@ -260,21 +413,10 @@ public class Crud {
         }
     }
 
-    public void subjetsMenu() {
-        while (true) {
-            System.out.println("--menú de materias--" +
-                    "\n1. Añadir" +
-                    "\n2. Actualizar" +
-                    "\n3. Buscar por código" +
-                    "\n4. Buscar por coincidencia" +
-                    "\n5. Eliminar" +
-                    "\n6. Regresar al menú principal");
-            int user_answer = getInt("opción:");
-        }
-    }
 
 
     public void run() {
+        MateriaDao materiaDao = new MateriaDao();
         System.out.println("Bienvido a SOA");
         while (true) {
             System.out.println("--menú principal--" +
