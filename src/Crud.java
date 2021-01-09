@@ -63,11 +63,11 @@ public class Crud {
     public Alumno findStudentForMatricula() {
         Alumno alumno = null;
         try {
-            String user_answer = getString("matricula");
+            String user_answer = getString("matricula:");
             ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
                 @Override
                 public boolean match(Alumno alumno) {
-                    return alumno.getMatricula().contains(user_answer);
+                    return alumno.getMatricula().equalsIgnoreCase(user_answer);
                 }
             });
             alumno = result.next();
@@ -83,11 +83,11 @@ public class Crud {
             ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
                 @Override
                 public boolean match(Alumno alumno) {
-                    return alumno.getMatricula().contains(user_answer);
+                    return alumno.getNombre().equalsIgnoreCase(user_answer);
                 }
             });
-            while (result.hasNext()) {
-                System.out.println(result.next());
+            for (Alumno a : result) {
+                System.out.println(a);
             }
         } catch (Exception e) {
             System.out.println("No se encontró ningúna coincidencia");
@@ -96,60 +96,65 @@ public class Crud {
 
 
     private Object getUpdatedString(String msj, Object value) {
-        String user_answer = null;
-        while (user_answer == null) {
-            user_answer = getString(msj);
-            if (user_answer.toLowerCase() == "exit") {
-                run();
-            }
-            if (user_answer != null) return value;
-        }
+        String user_answer =null;
+        user_answer = getString(msj);
+        if (user_answer.equalsIgnoreCase(""))return value;
         return user_answer;
     }
 
 
     public void updateStudent() {
         try {
-            String user_answer = getString("matricula");
-            ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
-                @Override
-                public boolean match(Alumno alumno) {
-                    System.out.println(2);
-                    return alumno.getMatricula().contains(user_answer);
-                }
-            });
-            for (Alumno a : result) {
-                System.out.println(a);
-            }
-            Alumno updated_student = result.next();
+            Alumno updated_student = findStudentForMatricula();
             System.out.println(updated_student);
-            updated_student.setNombre(
-                    (String) getUpdatedString("nombre", updated_student.getNombre())
-            );
             updated_student.setMatricula(
-                    (String) getUpdatedString("matricula", updated_student.getNombre())
+                    (String) getUpdatedString("matricula:", updated_student.getMatricula())
+            );
+            updated_student.setNombre(
+                    (String) getUpdatedString("nombre:", updated_student.getNombre())
             );
             updated_student.setFecha_nacimiento(
-                    (Date) getUpdatedString("fecha de nacimiento", updated_student.getFecha_nacimiento())
+                    (Date) getUpdatedString("fecha de nacimiento:", updated_student.getFecha_nacimiento())
             );
             db.store(updated_student);
             db.commit();
         } catch (Exception e) {
             db.rollback();
+            System.out.println(e.getMessage());
             System.out.println("no esta registrada esa matricula");
         }
 
     }
 
-    public void deleteStudent(){
-        Query query = db.query();
-        query.constrain(Alumno.class);
-        query.descend("nombre").constrain("Rene Velez");
-
-        ObjectSet<Alumno> resultado = query.execute();
-        Alumno alumno = resultado.next();
-        db.delete(alumno);
-        db.commit();
+    public void deleteStudent() {
+        try {
+            Alumno deleted_student = findStudentForMatricula();
+            if (deleted_student == null) {
+                return;
+            } else {
+                System.out.println("¿Estás segúro de eliminar al estudiante?\n1. si\n2. cancelar");
+                int user_answer = getInt("opción:");
+                switch (user_answer) {
+                    case 1:
+                        Query query = db.query();
+                        query.constrain(Alumno.class);
+                        query.descend("nombre").constrain(deleted_student.getMatricula());
+                        ObjectSet<Alumno> resultado = query.execute();
+                        Alumno alumno = resultado.next();
+                        db.delete(alumno);
+                        db.commit();
+                        System.out.println("Alumno Eliminado correctamente");
+                        break;
+                    case 2:
+                        System.out.println("cancelando eliminación...");
+                        break;
+                    default:
+                        System.out.println("Escoge una opción disponible");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void findAllSubjects() {
@@ -175,8 +180,7 @@ public class Crud {
             System.out.print(msj);
             String request = sc.nextLine();
 
-            if (request.equalsIgnoreCase("")) System.out.println("\'exit\' para regresar");
-            else return request;
+            return request;
         } catch (Exception e) {
             System.out.println("ingresa un valor");
         }
@@ -223,16 +227,15 @@ public class Crud {
                     findAllStudents();
                     break;
                 case 6:
-                    findAllStudents();
+                    deleteStudent();
                     break;
                 case 7:
                     System.out.println("volviendo...");
-                    run();
                     break;
                 default:
                     System.out.println("ingresa una respuesta valida");
             }
-
+            if (user_answer == 7) break;
         }
     }
 
@@ -248,6 +251,7 @@ public class Crud {
             int user_answer = getInt("opción:");
         }
     }
+
 
     public void run() {
         System.out.println("Bienvido a SOA");
