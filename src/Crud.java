@@ -60,20 +60,38 @@ public class Crud {
     }
 
 
-    public void findAllSubjects() {
+    public Alumno findStudentForMatricula() {
+        Alumno alumno = null;
         try {
-            Query query = db.query();
-            query.constrain(Materia.class);
-            ObjectSet<Materia> find_all = query.execute();
-            for (Materia m : find_all) {
-                System.out.println(m);
-            }
-
+            String user_answer = getString("matricula");
+            ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
+                @Override
+                public boolean match(Alumno alumno) {
+                    return alumno.getMatricula().contains(user_answer);
+                }
+            });
+            alumno = result.next();
         } catch (Exception e) {
-            System.out.println("error to find all subjects");
-            System.err.println(e);
+            System.out.println("Ese alumno no esta registrado");
         }
+        return alumno;
+    }
 
+    public void findStudentForAny() {
+        try {
+            String user_answer = getString("nombre:");
+            ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
+                @Override
+                public boolean match(Alumno alumno) {
+                    return alumno.getMatricula().contains(user_answer);
+                }
+            });
+            while (result.hasNext()) {
+                System.out.println(result.next());
+            }
+        } catch (Exception e) {
+            System.out.println("No se encontró ningúna coincidencia");
+        }
     }
 
 
@@ -123,7 +141,35 @@ public class Crud {
 
     }
 
-    public String getString(String msj) {
+    public void deleteStudent(){
+        Query query = db.query();
+        query.constrain(Alumno.class);
+        query.descend("nombre").constrain("Rene Velez");
+
+        ObjectSet<Alumno> resultado = query.execute();
+        Alumno alumno = resultado.next();
+        db.delete(alumno);
+        db.commit();
+    }
+
+    public void findAllSubjects() {
+        try {
+            Query query = db.query();
+            query.constrain(Materia.class);
+            ObjectSet<Materia> find_all = query.execute();
+            for (Materia m : find_all) {
+                System.out.println(m);
+            }
+
+        } catch (Exception e) {
+            System.out.println("error to find all subjects");
+            System.err.println(e);
+        }
+
+    }
+
+
+    private String getString(String msj) {
         Scanner sc = new Scanner(System.in);
         try {
             System.out.print(msj);
@@ -137,7 +183,7 @@ public class Crud {
         return getString(msj);
     }
 
-    public int getInt(String msj) {
+    private int getInt(String msj) {
         Scanner sc = new Scanner(System.in);
         try {
             System.out.print(msj);
@@ -156,8 +202,8 @@ public class Crud {
                     "\n3. Buscar por matricula" +
                     "\n4. Buscar por coincidencia" +
                     "\n5. Listar todos" +
-                    "\n5. Eliminar" +
-                    "\n6. Regresar al menú principal");
+                    "\n6. Eliminar" +
+                    "\n7. Regresar al menú principal");
             int user_answer = getInt("opción:");
             switch (user_answer) {
                 case 1:
@@ -167,15 +213,19 @@ public class Crud {
                     updateStudent();
                     break;
                 case 3:
-                    addStudent();
+                    Alumno alumno = findStudentForMatricula();
+                    if (alumno != null) System.out.println(alumno);
                     break;
                 case 4:
-                    updateStudent();
+                    findStudentForAny();
                     break;
                 case 5:
                     findAllStudents();
                     break;
                 case 6:
+                    findAllStudents();
+                    break;
+                case 7:
                     System.out.println("volviendo...");
                     run();
                     break;
@@ -188,7 +238,7 @@ public class Crud {
 
     public void subjetsMenu() {
         while (true) {
-            System.out.println("--menú de materias --" +
+            System.out.println("--menú de materias--" +
                     "\n1. Añadir" +
                     "\n2. Actualizar" +
                     "\n3. Buscar por código" +
