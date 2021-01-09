@@ -29,10 +29,31 @@ public class Crud {
     }
 
 
+    private String checkMatricula(String msj) {
+        try {
+            String user_answer = getString("matricula:");
+            ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
+                @Override
+                public boolean match(Alumno alumno) {
+                    return alumno.getMatricula().equalsIgnoreCase(user_answer);
+                }
+            });
+            if (!result.isEmpty()) {
+                System.out.println("esa matricula ya se encuentra en uso\nIntenta con otra");
+                return checkMatricula(msj);
+            } else {
+                return user_answer;
+            }
+        } catch (Exception e) {
+            return checkMatricula(msj);
+        }
+    }
+
+
     public void addStudent() {
         System.out.println("--Añadir un Alumno--");
         Alumno new_student = new Alumno(
-                getString("Matricula:"),
+                checkMatricula("Matricula:"),
                 getString("Nombre:"),
                 Date.valueOf(getString("fecha de nacimiento:"))
         );
@@ -96,9 +117,9 @@ public class Crud {
 
 
     private Object getUpdatedString(String msj, Object value) {
-        String user_answer =null;
+        String user_answer = null;
         user_answer = getString(msj);
-        if (user_answer.equalsIgnoreCase(""))return value;
+        if (user_answer.equalsIgnoreCase("")) return value;
         return user_answer;
     }
 
