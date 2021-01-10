@@ -1,5 +1,7 @@
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
+import com.db4o.query.Predicate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,6 +26,7 @@ public class main {
      */
 
     public static void main(String[] args) {
+        /*
         Alumno alumno1 = new Alumno("20193tn151", "Alexis", ("2001-06-27"));
         Alumno alumno2 = new Alumno("20193tn142", "Pedro", ("2001-06-27"));
         Alumno alumno3 = new Alumno("20193tn153", "Juan", ("2001-06-27"));
@@ -74,6 +77,8 @@ public class main {
         //db.rollback();
         db.close();
 
+
+         */
 
         //db in Db4o
 
@@ -130,5 +135,21 @@ public class main {
         db.close();
 
          */
+        ObjectContainer db = Db4oEmbedded.openFile(
+                Db4oEmbedded.newConfiguration(),
+                "escuela_alexis.db4o"
+        );
+        Crud crud = new Crud();
+        ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+            @Override
+            public boolean match(Materia materia) {
+                return materia != null;
+            }
+        });
+        while (result.hasNext()) {
+            Materia materia = result.next();
+            Set<Alumno> updated_students = materia.getAlumnos();
+            System.out.println(materia);
+        }
     }
 }

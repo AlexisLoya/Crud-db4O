@@ -14,7 +14,11 @@ public class Crud {
     private ObjectContainer db = Db4oEmbedded.openFile(
             Db4oEmbedded.newConfiguration(),
             "escuela_alexis.db4o"
+
     );
+   // db.Ext().Crud().CascadeOnDelete(true);
+   // db.Ext().Configure().ObjectClass(typeof(Circle)).CascadeOnDelete(true);
+
 
     protected boolean addData(Object data) {
         try {
@@ -125,7 +129,7 @@ public class Crud {
             ObjectSet<Alumno> result = db.query(new Predicate<Alumno>() {
                 @Override
                 public boolean match(Alumno alumno) {
-                    return alumno.getNombre().equalsIgnoreCase(user_answer);
+                    return alumno.getNombre().contains(user_answer);
                 }
             });
             for (Alumno a : result) {
@@ -178,11 +182,31 @@ public class Crud {
                 int user_answer = getInt("opción:");
                 switch (user_answer) {
                     case 1:
-                        Query query = db.query();
-                        query.constrain(Alumno.class);
-                        query.descend("nombre").constrain(deleted_student.getMatricula());
-                        ObjectSet<Alumno> resultado = query.execute();
-                        Alumno alumno = resultado.next();
+                        ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+                            @Override
+                            public boolean match(Materia materia) {
+                                return materia != null;
+                            }
+                        });
+                        while (result.hasNext()){
+                            Materia materia = result.next();
+                            Set<Alumno> updated_list = materia.getAlumnos();
+                            for (Alumno a: updated_list) {
+                                if (a.getMatricula().equals(deleted_student.getMatricula())){
+                                    updated_list.remove(deleted_student);
+                                    break;
+                                }
+                            }
+                            materia.setAlumnos(updated_list);
+                            db.store(materia);
+                        }
+                        ObjectSet<Alumno> result_1 = db.query(new Predicate<Alumno>() {
+                            @Override
+                            public boolean match(Alumno alumno) {
+                                return alumno.getMatricula().equalsIgnoreCase(deleted_student.getMatricula());
+                            }
+                        });
+                        Alumno alumno = result_1.next();
                         db.delete(alumno);
                         db.commit();
                         System.out.println("Alumno Eliminado correctamente");
@@ -220,12 +244,14 @@ public class Crud {
             ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
                 @Override
                 public boolean match(Materia materia) {
-                    return materia.getNombre().equalsIgnoreCase(user_answer);
+                    return materia.getNombre().contains(user_answer);
                 }
             });
+            System.out.println(1);
             for (Materia a : result) {
                 System.out.println(a);
             }
+            System.out.println(2);
         } catch (Exception e) {
             System.out.println("No se encontró ningúna coincidencia");
         }
