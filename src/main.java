@@ -1,50 +1,50 @@
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
-import com.db4o.ObjectSet;
-import com.db4o.query.Predicate;
-import com.db4o.query.Query;
 
-import java.util.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 public class main {
-    public static void run() {
-
+    /*
+    public static Date run(String user_date) {
+        Date date1= null;
+        try {
+            SimpleDateFormat formatter1=new SimpleDateFormat("yyyy-MM-dd");
+            date1=formatter1.parse(user_date);
+            System.out.println(date1);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date1;
 
     }
 
-    public static void main(String[] args) {
-        /*
-        Alumno alumno1 = new Alumno("20193tn151", "Alexis", "2001-06-27");
-        Alumno alumno2 = new Alumno("20193tn142", "Pedro", "2001-06-27");
-        Alumno alumno3 = new Alumno("20193tn153", "Juan", "2001-06-27");
-        Alumno alumno4 = new Alumno("20193tn154", "Agustín", "2001-06-27");
-        Alumno alumno5 = new Alumno("20193tn155", "Manuel", "2001-06-27");
-        Alumno alumno6 = new Alumno("20193tn156", "Luis", "2001-06-27");
-        Alumno alumno7 = new Alumno("20193tn157", "Raúl", "2001-06-27");
-        Alumno alumno8 = new Alumno("20193tn158", "Ramon", "2001-06-27");
-        Alumno alumno9 = new Alumno("20193tn158", "Hector", "2001-06-27");
-        Alumno alumno10 = new Alumno("20193tn158", "Mane", "2001-06-27");
+     */
 
-        Set<Alumno> grupo5A = new HashSet<>();
-        Set<Alumno> grupo5B = new HashSet<>();
-        Set<Alumno> grupo5C = new HashSet<>();
-        grupo5A.add(alumno1);
-        grupo5A.add(alumno2);
-        grupo5A.add(alumno3);
-        Materia materia1 = new Materia("TOE-3", "Taller de lectura y redacción", grupo5A);
+    public static void main(String[] args) {
+        Alumno alumno1 = new Alumno("20193tn151", "Alexis", ("2001-06-27"));
+        Alumno alumno2 = new Alumno("20193tn142", "Pedro", ("2001-06-27"));
+        Alumno alumno3 = new Alumno("20193tn153", "Juan", ("2001-06-27"));
+        Alumno alumno4 = new Alumno("20193tn154", "Agustín", ("2001-06-27"));
+        Alumno alumno5 = new Alumno("20193tn155", "Manuel", ("2001-06-27"));
+        Alumno alumno6 = new Alumno("20193tn156", "Luis", ("2001-06-27"));
+        Alumno alumno7 = new Alumno("20193tn157", "Raúl", ("2001-06-27"));
+        Alumno alumno8 = new Alumno("20193tn158", "Ramon", ("2001-06-27"));
+        Alumno alumno9 = new Alumno("20193tn158", "Hector", ("2001-06-27"));
+        Alumno alumno10 = new Alumno("20193tn158", "Mane", ("2001-06-27"));
+
+        Set<Alumno> alumnos = new HashSet<>();
+        Set<Alumno> alumnos2 = new HashSet<>();
+        Set<Alumno> alumnos3 = new HashSet<>();
+        Materia materia1 = new Materia("TOE-3", "Taller de lectura y redacción", alumnos);
         System.out.println(materia1);
         System.out.printf("------------------------\n");
-        grupo5A.add(alumno4);
-        grupo5A.add(alumno5);
-        grupo5A.add(alumno6);
-        Materia materia2 = new Materia("BD-5", "base de datos", grupo5B);
+        Materia materia2 = new Materia("BD-5", "base de datos", alumnos2);
         System.out.println(materia1);
         System.out.printf("------------------------\n");
-        grupo5A.add(alumno7);
-        grupo5A.add(alumno8);
-        grupo5A.add(alumno9);
-        grupo5A.add(alumno10);
-        Materia materia3 = new Materia("IG-5", "Ingles V", grupo5C);
+        Materia materia3 = new Materia("IG-5", "Ingles V", alumnos3);
         System.out.println(materia1);
         System.out.printf("------------------------\n");
 
@@ -74,7 +74,7 @@ public class main {
         //db.rollback();
         db.close();
 
-         */
+
         //db in Db4o
 
        /*ObjectSet find_all = db.queryByExample(
@@ -94,6 +94,7 @@ public class main {
         }
          */
         //db in Db4o
+        /*
         ObjectContainer db = Db4oEmbedded.openFile(
                 Db4oEmbedded.newConfiguration(),
                 "escuela_alexis.db4o"
@@ -128,5 +129,6 @@ public class main {
         db.commit();
         db.close();
 
+         */
     }
 }

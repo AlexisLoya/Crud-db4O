@@ -1,12 +1,12 @@
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 
 public class Alumno implements Serializable {
     private String matricula;
     private String nombre;
-    private Date fecha_nacimiento;
+    private String fecha_nacimiento;
 
-    public Alumno(String matricula, String nombre, Date fecha_nacimiento) {
+    public Alumno(String matricula, String nombre, String fecha_nacimiento) {
         this.matricula = matricula;
         this.nombre = nombre;
         this.fecha_nacimiento = fecha_nacimiento;
@@ -28,11 +28,11 @@ public class Alumno implements Serializable {
         this.nombre = nombre;
     }
 
-    public Date getFecha_nacimiento() {
+    public String getFecha_nacimiento() {
         return fecha_nacimiento;
     }
 
-    public void setFecha_nacimiento(Date fecha_nacimiento) {
+    public void setFecha_nacimiento(String fecha_nacimiento) {
         this.fecha_nacimiento = fecha_nacimiento;
     }
 

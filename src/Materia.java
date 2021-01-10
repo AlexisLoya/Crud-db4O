@@ -37,12 +37,12 @@ public class Materia implements Serializable {
         this.alumnos = alumnos;
     }
 
-    public void addAlumno(Alumno newAlumon){
-        alumnos.add(newAlumon);
+    public void addAlumno(Alumno newAlumno){
+        alumnos.add(newAlumno);
     }
 
-    public void deleteAlumno(Alumno newAlumon){
-        alumnos.remove(newAlumon);
+    public void deleteAlumno(Alumno oldAlumno){
+        alumnos.remove(oldAlumno);
     }
 
 

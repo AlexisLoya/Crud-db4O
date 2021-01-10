@@ -76,7 +76,7 @@ public class Crud {
         Alumno new_student = new Alumno(
                 checkMatricula("Matricula:"),
                 getString("Nombre:"),
-                Date.valueOf(getString("fecha de nacimiento:"))
+                getString("fecha de nacimiento:")
         );
         if (addData(new_student)) {
             System.out.println("alumno registrado correctamente");
@@ -137,26 +137,19 @@ public class Crud {
     }
 
 
-    private Object getUpdatedString(String msj, Object value) {
-        String user_answer = null;
-        user_answer = getString(msj);
-        if (user_answer.equalsIgnoreCase("")) return value;
-        return user_answer;
-    }
+
 
 
     public void updateStudent() {
         try {
             Alumno updated_student = findStudentForMatricula();
             System.out.println(updated_student);
-            updated_student.setMatricula(
-                    (String) getUpdatedString("matricula:", updated_student.getMatricula())
-            );
+            System.out.println("matricula:"+updated_student.getMatricula());
             updated_student.setNombre(
                     (String) getUpdatedString("nombre:", updated_student.getNombre())
             );
             updated_student.setFecha_nacimiento(
-                    (Date) getUpdatedString("fecha de nacimiento:", updated_student.getFecha_nacimiento())
+                    (String) getUpdatedString("fecha de nacimiento:", updated_student.getFecha_nacimiento())
             );
             db.store(updated_student);
             db.commit();
@@ -166,6 +159,13 @@ public class Crud {
             System.out.println("no esta registrada esa matricula");
         }
 
+    }
+
+    private Object getUpdatedString(String msj, Object value) {
+        String user_answer = null;
+        user_answer = getString(msj);
+        if (user_answer.equalsIgnoreCase("")) return value;
+        return user_answer;
     }
 
     public void deleteStudent() {
@@ -279,6 +279,85 @@ public class Crud {
             System.out.println(e.getMessage());
         }
     }
+
+
+    public void addStudentToSubject() {
+        System.out.println("--Añadir Alumno a una materia--");
+        Materia materia = findSubjectForCode();
+        if (materia == null) return;
+        Alumno alumno = findStudentForMatricula();
+        if (alumno == null) return;
+        System.out.println(alumno);
+        System.out.println("Clave:"+materia.getClave()+
+                "\nMateria:"+materia.getNombre()+
+                "\n ¿Estás seguro de agregar al alumno?\n1.Si\n2.Cancelar");
+        int user_answer = getInt("opción:");
+        switch (user_answer) {
+            case 1:
+                Query query = db.query();
+                query.constrain(Materia.class);
+                query.descend("clave").constrain(materia.getClave());
+                ObjectSet<Materia> result = query.execute();
+                materia = result.next();
+                //add
+                if (materia.getAlumnos().isEmpty()){
+                    Set<Alumno> alumnos = new HashSet<>();
+                    alumnos.add(alumno);
+                    materia.setAlumnos(alumnos);
+                }else{
+                    Set<Alumno> alumnos = new HashSet<>();
+                    for (Alumno a:materia.getAlumnos()) {
+                        alumnos.add(a);
+                    }
+                    alumnos.add(alumno);
+                    materia.setAlumnos(alumnos);
+                }
+                db.store(materia);
+                db.commit();
+                System.out.println("Alumno agregado correctamente");
+                break;
+            case 2:
+                System.out.println("cancelando...");
+                break;
+            default:
+                System.out.println("Escoge una opción disponible");
+        }
+
+    }
+
+
+    public void deleteStudentToSubject() {
+        System.out.println("--Eliminar Alumno de una materia--");
+        Materia materia = findSubjectForCode();
+        if (materia == null) return;
+        Alumno alumno = findStudentForMatricula();
+        if (alumno == null) return;
+        System.out.println(alumno);
+        System.out.println("Clave:"+materia.getClave()+
+                "\nMateria:"+materia.getNombre()+
+                "\n ¿Estás seguro de eliminar al alumno?\n1.Si\n2.Cancelar");
+        int user_answer = getInt("opción:");
+        switch (user_answer) {
+            case 1:
+                Query query = db.query();
+                query.constrain(Materia.class);
+                query.descend("clave").constrain(materia.getClave());
+                ObjectSet<Materia> result = query.execute();
+                materia = result.next();
+                materia.deleteAlumno(alumno);
+                db.store(materia);
+                db.commit();
+                System.out.println("Alumno eliminado correctamente");
+                break;
+            case 2:
+                System.out.println("cancelando...");
+                break;
+            default:
+                System.out.println("Escoge una opción disponible");
+        }
+
+    }
+
     public void subjetsMenu() {
         while (true) {
             System.out.println("--menú de materias--" +
@@ -300,10 +379,10 @@ public class Crud {
                     updateStudent();
                     break;
                 case 3:
-                    updateStudent();
+                    addStudentToSubject();
                     break;
                 case 4:
-                    updateStudent();
+                    deleteStudentToSubject();
                     break;
                 case 5:
                     Materia materia = findSubjectForCode();
@@ -324,11 +403,9 @@ public class Crud {
                 default:
                     System.out.println("ingresa una respuesta valida");
             }
-            if (user_answer == 7) break;
+            if (user_answer == 9) break;
         }
     }
-
-
 
 
     public void findAllSubjects() {
@@ -414,9 +491,7 @@ public class Crud {
     }
 
 
-
     public void run() {
-        MateriaDao materiaDao = new MateriaDao();
         System.out.println("Bienvido a SOA");
         while (true) {
             System.out.println("--menú principal--" +
