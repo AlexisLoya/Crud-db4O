@@ -280,6 +280,28 @@ public class Crud {
         }
     }
 
+    public Alumno findStudentInSubject(String nombre){
+        Alumno student = findStudentForMatricula();
+        Alumno finded_student = null;
+        try {
+            Set<Alumno> alumnos = new HashSet<>();
+            ObjectSet<Materia> result = db.query(new Predicate<Materia>() {
+                @Override
+                public boolean match(Materia materia) {
+                    return materia.getNombre().equalsIgnoreCase(nombre);
+                }
+            });
+            alumnos = result.next().getAlumnos();
+            for (Alumno a: alumnos) {
+                if(a.getMatricula() == student.getMatricula()){
+                    finded_student = student;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Ese alumno no esta registrado en la materia");
+        }
+        return finded_student;
+    }
 
     public void addStudentToSubject() {
         System.out.println("--Añadir Alumno a una materia--");
@@ -330,7 +352,7 @@ public class Crud {
         System.out.println("--Eliminar Alumno de una materia--");
         Materia materia = findSubjectForCode();
         if (materia == null) return;
-        Alumno alumno = findStudentForMatricula();
+        Alumno alumno = findStudentInSubject(materia.getClave());
         if (alumno == null) return;
         System.out.println(alumno);
         System.out.println("Clave:"+materia.getClave()+
@@ -344,7 +366,15 @@ public class Crud {
                 query.descend("clave").constrain(materia.getClave());
                 ObjectSet<Materia> result = query.execute();
                 materia = result.next();
-                materia.deleteAlumno(alumno);
+                //add
+                    Set<Alumno> alumnos = new HashSet<>();
+                    for (Alumno a:materia.getAlumnos()) {
+                        alumnos.add(a);
+                    }
+                    alumnos.remove(alumno);
+                    materia.setAlumnos(alumnos);
+
+                //materia.deleteAlumno(alumno);
                 db.store(materia);
                 db.commit();
                 System.out.println("Alumno eliminado correctamente");
@@ -357,6 +387,27 @@ public class Crud {
         }
 
     }
+
+    public void updateSubject() {
+        try {
+            Materia updated_subject = findSubjectForCode();
+            System.out.println("Clave:"+updated_subject.getClave()+
+                    "\nNombre:"+updated_subject.getNombre()+
+                    "\nAlumnos:"+updated_subject.getAlumnos().size());
+            updated_subject.setNombre(
+                    (String) getUpdatedString("nombre:", updated_subject.getNombre())
+            );
+
+            db.store(updated_subject);
+            db.commit();
+        } catch (Exception e) {
+            db.rollback();
+            System.out.println(e.getMessage());
+            System.out.println("no esta registrada esa matricula");
+        }
+
+    }
+
 
     public void subjetsMenu() {
         while (true) {
@@ -376,7 +427,7 @@ public class Crud {
                     addSSubject();
                     break;
                 case 2:
-                    updateStudent();
+                    updateSubject();
                     break;
                 case 3:
                     addStudentToSubject();
